@@ -25,12 +25,19 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
+            cursor: pointer;
         }
         .target {
             background-color: red;
         }
         .distractor {
             background-color: blue;
+        }
+        .neutral {
+            background-color: gray;
+        }
+        .selected {
+            border: 2px solid yellow;
         }
     </style>
 </head>
@@ -39,22 +46,41 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('mot-container');
-            const numDots = 10;
-            const numTargets = 3;
+            const numDots = 10; // Total number of dots
+            const numTargets = 3; // Number of target dots
             let dots = [];
+            let targets = [];
+            let selectedDots = [];
 
+            // Function to create a dot
             function createDot(x, y, isTarget) {
                 let dot = document.createElement('div');
                 dot.classList.add('dot');
                 dot.classList.add(isTarget ? 'target' : 'distractor');
                 dot.style.left = `${x}px`;
                 dot.style.top = `${y}px`;
-                dot.dx = Math.random() * 2 - 1;
-                dot.dy = Math.random() * 2 - 1;
+                dot.dx = Math.random() * 2 - 1; // Random horizontal speed
+                dot.dy = Math.random() * 2 - 1; // Random vertical speed
+                dot.addEventListener('click', () => selectDot(dot));
                 container.appendChild(dot);
+                if (isTarget) {
+                    targets.push(dot);
+                }
                 return dot;
             }
 
+            // Function to select a dot
+            function selectDot(dot) {
+                if (!selectedDots.includes(dot)) {
+                    dot.classList.add('selected');
+                    selectedDots.push(dot);
+                } else {
+                    dot.classList.remove('selected');
+                    selectedDots = selectedDots.filter(d => d !== dot);
+                }
+            }
+
+            // Initialize the dots with random positions and velocities
             function initializeDots() {
                 for (let i = 0; i < numDots; i++) {
                     let x = Math.random() * (container.clientWidth - 20);
@@ -65,6 +91,7 @@
                 }
             }
 
+            // Move the dots and handle boundary collisions
             function moveDots() {
                 dots.forEach(dot => {
                     let x = parseFloat(dot.style.left);
@@ -72,6 +99,7 @@
                     x += dot.dx;
                     y += dot.dy;
 
+                    // Reverse direction if the dot hits the container's boundary
                     if (x <= 0 || x >= container.clientWidth - 20) dot.dx *= -1;
                     if (y <= 0 || y >= container.clientHeight - 20) dot.dy *= -1;
 
@@ -80,14 +108,35 @@
                 });
             }
 
+            // Check the accuracy of the participant's selections
+            function checkAccuracy() {
+                let correctSelections = selectedDots.filter(dot => targets.includes(dot));
+                let accuracy = (correctSelections.length / numTargets) * 100;
+                alert(`You selected ${correctSelections.length} out of ${numTargets} correctly. Accuracy: ${accuracy}%`);
+                // Here you can save the results (e.g., send to a server or save locally)
+            }
+
+            // Start the tracking task
             function startTracking() {
                 initializeDots();
+                // After 2 seconds, change the target color to neutral
                 setTimeout(() => {
-                    dots.forEach(dot => dot.classList.remove('target'));
-                    setInterval(moveDots, 20);
+                    dots.forEach(dot => {
+                        if (dot.classList.contains('target')) {
+                            dot.classList.remove('target');
+                            dot.classList.add('neutral');
+                        }
+                    });
+                    setInterval(moveDots, 20); // Move the dots every 20 milliseconds
+                    // After 10 seconds of movement, prompt for selection
+                    setTimeout(() => {
+                        clearInterval(movementInterval);
+                        checkAccuracy();
+                    }, 10000);
                 }, 2000);
             }
 
+            let movementInterval;
             startTracking();
         });
     </script>
