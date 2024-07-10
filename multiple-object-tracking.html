@@ -30,8 +30,7 @@
         .target {
             background-color: red;
         }
-        .distractor,
-        .neutral {
+        .distractor, .neutral {
             background-color: blue;
         }
         .selected {
@@ -44,21 +43,27 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('mot-container');
-            const numDots = 10; // Total number of dots
-            const numTargets = 3; // Number of target dots
+            const trials = [
+                { numDots: 10, numTargets: 2 }, { numDots: 10, numTargets: 2 },
+                { numDots: 10, numTargets: 3 }, { numDots: 10, numTargets: 3 },
+                { numDots: 10, numTargets: 4 }, { numDots: 10, numTargets: 4 },
+                { numDots: 10, numTargets: 5 }, { numDots: 10, numTargets: 5 },
+                { numDots: 10, numTargets: 6 }, { numDots: 10, numTargets: 6 }
+            ];
+            let currentTrial = 0;
             let dots = [];
             let targets = [];
             let selectedDots = [];
+            let movementInterval;
 
-            // Function to create a dot
             function createDot(x, y, isTarget) {
                 let dot = document.createElement('div');
                 dot.classList.add('dot');
                 dot.classList.add(isTarget ? 'target' : 'distractor');
                 dot.style.left = `${x}px`;
                 dot.style.top = `${y}px`;
-                dot.dx = Math.random() * 2 - 1; // Random horizontal speed
-                dot.dy = Math.random() * 2 - 1; // Random vertical speed
+                dot.dx = Math.random() * 4 - 2; // Faster random horizontal speed
+                dot.dy = Math.random() * 4 - 2; // Faster random vertical speed
                 dot.addEventListener('click', () => selectDot(dot));
                 container.appendChild(dot);
                 if (isTarget) {
@@ -67,7 +72,6 @@
                 return dot;
             }
 
-            // Function to select a dot
             function selectDot(dot) {
                 if (!selectedDots.includes(dot)) {
                     dot.classList.add('selected');
@@ -78,8 +82,7 @@
                 }
             }
 
-            // Initialize the dots with random positions and velocities
-            function initializeDots() {
+            function initializeDots(numDots, numTargets) {
                 for (let i = 0; i < numDots; i++) {
                     let x = Math.random() * (container.clientWidth - 20);
                     let y = Math.random() * (container.clientHeight - 20);
@@ -89,7 +92,6 @@
                 }
             }
 
-            // Move the dots and handle boundary collisions
             function moveDots() {
                 dots.forEach(dot => {
                     let x = parseFloat(dot.style.left);
@@ -97,7 +99,6 @@
                     x += dot.dx;
                     y += dot.dy;
 
-                    // Reverse direction if the dot hits the container's boundary
                     if (x <= 0 || x >= container.clientWidth - 20) dot.dx *= -1;
                     if (y <= 0 || y >= container.clientHeight - 20) dot.dy *= -1;
 
@@ -106,18 +107,37 @@
                 });
             }
 
-            // Check the accuracy of the participant's selections
             function checkAccuracy() {
                 let correctSelections = selectedDots.filter(dot => targets.includes(dot));
-                let accuracy = (correctSelections.length / numTargets) * 100;
-                alert(`You selected ${correctSelections.length} out of ${numTargets} correctly. Accuracy: ${accuracy}%`);
-                // Here you can save the results (e.g., send to a server or save locally)
+                let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
+                alert(`You selected ${correctSelections.length} out of ${trials[currentTrial].numTargets} correctly. Accuracy: ${accuracy}%`);
+                console.log({
+                    trial: currentTrial + 1,
+                    selected: selectedDots.map(dot => ({ x: parseFloat(dot.style.left), y: parseFloat(dot.style.top) })),
+                    targets: targets.map(dot => ({ x: parseFloat(dot.style.left), y: parseFloat(dot.style.top) })),
+                    correctSelections: correctSelections.length,
+                    accuracy: accuracy
+                });
+                nextTrial();
             }
 
-            // Start the tracking task
+            function nextTrial() {
+                currentTrial++;
+                if (currentTrial < trials.length) {
+                    startTracking();
+                } else {
+                    alert('All trials completed!');
+                }
+            }
+
             function startTracking() {
-                initializeDots();
-                // After 2 seconds, change the target color to neutral (same as distractors)
+                dots = [];
+                targets = [];
+                selectedDots = [];
+                container.innerHTML = ''; // Clear previous dots
+
+                initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
+                
                 setTimeout(() => {
                     dots.forEach(dot => {
                         if (dot.classList.contains('target')) {
@@ -125,16 +145,17 @@
                             dot.classList.add('neutral');
                         }
                     });
-                    let movementInterval = setInterval(moveDots, 20); // Move the dots every 20 milliseconds
-
-                    // After 10 seconds of movement, freeze dots and prompt for selection
+                    movementInterval = setInterval(moveDots, 20); // Move the dots every 20 milliseconds
+                    
                     setTimeout(() => {
                         clearInterval(movementInterval);
-                        alert('Please click on the dots you believe were the targets.');
-                        // After participant selection, check accuracy
-                        setTimeout(checkAccuracy, 10000); // Allow 10 seconds for selection
-                    }, 10000);
-                }, 2000);
+                        dots.forEach(dot => dot.dx = dot.dy = 0); // Freeze all dots
+                        
+                        setTimeout(() => {
+                            checkAccuracy();
+                        }, 4000); // Give participants 4 seconds to select the targets
+                    }, 10000); // Move dots for 10 seconds
+                }, 2000); // Show targets for 2 seconds
             }
 
             startTracking();
