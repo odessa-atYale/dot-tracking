@@ -78,6 +78,19 @@
             let selectedDots = [];
             let movementInterval;
 
+            // Function to get query parameters
+            function getQueryParams() {
+                const params = {};
+                window.location.search.substring(1).split("&").forEach(function(param) {
+                    const [key, value] = param.split("=");
+                    params[key] = decodeURIComponent(value);
+                });
+                return params;
+            }
+
+            const queryParams = getQueryParams();
+            const subjectId = queryParams.subject_id || 'unknown';
+
             function createDot(x, y, isTarget) {
                 let dot = document.createElement('div');
                 dot.classList.add('dot');
@@ -167,14 +180,15 @@
                     trial: currentTrial + 1,
                     correctSelections: correctSelections.length,
                     totalTargets: trials[currentTrial].numTargets,
-                    accuracy: accuracy
+                    accuracy: accuracy,
+                    subjectId: subjectId
                 });
 
                 setTimeout(nextTrial, 2000); // Move to the next trial after 2 seconds
             }
 
             function saveResultsToGoogleSheet(data) {
-                fetch('https://script.google.com/macros/library/d/1FFe4DVrnokPKFJDltNgfs7zxP4WvGu5ew_VNxzEv9G8j5Tw-ZOFjt6ad/1', {
+                fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
