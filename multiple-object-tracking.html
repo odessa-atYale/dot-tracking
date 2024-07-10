@@ -36,7 +36,7 @@
         .selected {
             border: 2px solid yellow;
         }
-        #trial-message, #prompt-message {
+        #trial-message, #prompt-message, #error-message {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -48,18 +48,23 @@
         #prompt-message {
             font-size: 20px;
         }
+        #error-message {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <div id="mot-container">
         <div id="trial-message"></div>
         <div id="prompt-message">Please select the formerly red dots</div>
+        <div id="error-message">Please select the correct number of targets</div>
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('mot-container');
             const trialMessage = document.getElementById('trial-message');
             const promptMessage = document.getElementById('prompt-message');
+            const errorMessage = document.getElementById('error-message');
             const trials = [
                 { numDots: 10, numTargets: 2 }, { numDots: 10, numTargets: 2 },
                 { numDots: 10, numTargets: 3 }, { numDots: 10, numTargets: 3 },
@@ -93,8 +98,10 @@
 
             function selectDot(dot) {
                 if (!selectedDots.includes(dot)) {
-                    dot.classList.add('selected');
-                    selectedDots.push(dot);
+                    if (selectedDots.length < trials[currentTrial].numTargets) {
+                        dot.classList.add('selected');
+                        selectedDots.push(dot);
+                    }
                 } else {
                     dot.classList.remove('selected');
                     selectedDots = selectedDots.filter(d => d !== dot);
@@ -127,6 +134,14 @@
             }
 
             function checkAccuracy() {
+                if (selectedDots.length !== trials[currentTrial].numTargets) {
+                    errorMessage.style.display = 'block';
+                    setTimeout(() => {
+                        errorMessage.style.display = 'none';
+                    }, 2000);
+                    return;
+                }
+
                 let correctSelections = selectedDots.filter(dot => targets.includes(dot));
                 let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
                 alert(`You selected ${correctSelections.length} out of ${trials[currentTrial].numTargets} correctly. Accuracy: ${accuracy}%`);
@@ -173,6 +188,7 @@
                 container.innerHTML = ''; // Clear previous dots and message
                 container.appendChild(trialMessage); // Re-append the trial message
                 container.appendChild(promptMessage); // Re-append the prompt message
+                container.appendChild(errorMessage); // Re-append the error message
 
                 initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
                 
