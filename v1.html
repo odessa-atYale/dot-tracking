@@ -30,6 +30,7 @@
             let data = [];
 
             function createDot(x, y) {
+                console.log(`Creating dot at (${x}, ${y})`);
                 let dot = document.createElement('div');
                 dot.classList.add('dot');
                 dot.style.left = `${x}px`;
@@ -50,10 +51,16 @@
 
             function startTask() {
                 startTime = Date.now();
+                let containerWidth = dotContainer.offsetWidth;
+                let containerHeight = dotContainer.offsetHeight;
                 for (let i = 0; i < 10; i++) {
-                    dots.push({x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight});
+                    dots.push({
+                        x: Math.random() * (containerWidth - 20),
+                        y: Math.random() * (containerHeight - 20)
+                    });
                 }
-                createDot(dots.pop().x, dots.pop().y);
+                let firstDot = dots.pop();
+                createDot(firstDot.x, firstDot.y);
             }
 
             function sendData() {
