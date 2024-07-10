@@ -36,13 +36,25 @@
         .selected {
             border: 2px solid yellow;
         }
+        #trial-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div id="mot-container"></div>
+    <div id="mot-container">
+        <div id="trial-message"></div>
+    </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('mot-container');
+            const trialMessage = document.getElementById('trial-message');
             const trials = [
                 { numDots: 10, numTargets: 2 }, { numDots: 10, numTargets: 2 },
                 { numDots: 10, numTargets: 3 }, { numDots: 10, numTargets: 3 },
@@ -130,11 +142,21 @@
                 }
             }
 
-            function startTracking() {
+            function showTrialMessage(message) {
+                trialMessage.textContent = message;
+                trialMessage.style.display = 'block';
+                setTimeout(() => {
+                    trialMessage.style.display = 'none';
+                    startTrial();
+                }, 2000);
+            }
+
+            function startTrial() {
                 dots = [];
                 targets = [];
                 selectedDots = [];
-                container.innerHTML = ''; // Clear previous dots
+                container.innerHTML = ''; // Clear previous dots and message
+                container.appendChild(trialMessage); // Re-append the trial message
 
                 initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
                 
@@ -156,6 +178,10 @@
                         }, 4000); // Give participants 4 seconds to select the targets
                     }, 10000); // Move dots for 10 seconds
                 }, 2000); // Show targets for 2 seconds
+            }
+
+            function startTracking() {
+                showTrialMessage(`Trial ${currentTrial + 1}`);
             }
 
             startTracking();
