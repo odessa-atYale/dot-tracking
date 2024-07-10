@@ -79,7 +79,7 @@
                 dot.classList.add(isTarget ? 'target' : 'distractor');
                 dot.style.left = `${x}px`;
                 dot.style.top = `${y}px`;
-                let speed = Math.random() * 2 + 1; // Random speed between 1 and 3
+                let speed = 5; // Fixed fast speed for all dots
                 let angle = Math.random() * 2 * Math.PI; // Random angle
                 dot.dx = speed * Math.cos(angle); // Fixed horizontal speed
                 dot.dy = speed * Math.sin(angle); // Fixed vertical speed
@@ -137,7 +137,15 @@
                     correctSelections: correctSelections.length,
                     accuracy: accuracy
                 });
-                nextTrial();
+                blinkTargets();
+            }
+
+            function blinkTargets() {
+                targets.forEach(dot => dot.classList.add('target'));
+                setTimeout(() => {
+                    targets.forEach(dot => dot.classList.remove('target'));
+                    nextTrial();
+                }, 1000); // Blink red for 1 second
             }
 
             function nextTrial() {
