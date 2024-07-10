@@ -144,23 +144,44 @@
 
                 let correctSelections = selectedDots.filter(dot => targets.includes(dot));
                 let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
-                alert(`You selected ${correctSelections.length} out of ${trials[currentTrial].numTargets} correctly. Accuracy: ${accuracy}%`);
-                console.log({
+
+                // Highlight correct selections in green and incorrect in black
+                selectedDots.forEach(dot => {
+                    if (targets.includes(dot)) {
+                        dot.style.backgroundColor = 'green';
+                    } else {
+                        dot.style.backgroundColor = 'black';
+                    }
+                });
+
+                // Flash missed targets in red
+                let missedTargets = targets.filter(dot => !selectedDots.includes(dot));
+                missedTargets.forEach(dot => {
+                    dot.style.backgroundColor = 'red';
+                    setTimeout(() => {
+                        dot.style.backgroundColor = 'blue';
+                    }, 1000); // Flash red for 1 second
+                });
+
+                saveResultsToGoogleSheet({
                     trial: currentTrial + 1,
-                    selected: selectedDots.map(dot => ({ x: parseFloat(dot.style.left), y: parseFloat(dot.style.top) })),
-                    targets: targets.map(dot => ({ x: parseFloat(dot.style.left), y: parseFloat(dot.style.top) })),
                     correctSelections: correctSelections.length,
+                    totalTargets: trials[currentTrial].numTargets,
                     accuracy: accuracy
                 });
-                blinkTargets();
+
+                setTimeout(nextTrial, 2000); // Move to the next trial after 2 seconds
             }
 
-            function blinkTargets() {
-                targets.forEach(dot => dot.classList.add('target'));
-                setTimeout(() => {
-                    targets.forEach(dot => dot.classList.remove('target'));
-                    nextTrial();
-                }, 1000); // Blink red for 1 second
+            function saveResultsToGoogleSheet(data) {
+                fetch('https://script.google.com/macros/library/d/1FFe4DVrnokPKFJDltNgfs7zxP4WvGu5ew_VNxzEv9G8j5Tw-ZOFjt6ad/1', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
             }
 
             function nextTrial() {
