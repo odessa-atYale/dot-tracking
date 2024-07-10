@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Object Tracking Task</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #mot-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+        }
+        .dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        .target {
+            background-color: red;
+        }
+        .distractor {
+            background-color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div id="mot-container"></div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const container = document.getElementById('mot-container');
+            const numDots = 10;
+            const numTargets = 3;
+            let dots = [];
+
+            function createDot(x, y, isTarget) {
+                let dot = document.createElement('div');
+                dot.classList.add('dot');
+                dot.classList.add(isTarget ? 'target' : 'distractor');
+                dot.style.left = `${x}px`;
+                dot.style.top = `${y}px`;
+                dot.dx = Math.random() * 2 - 1;
+                dot.dy = Math.random() * 2 - 1;
+                container.appendChild(dot);
+                return dot;
+            }
+
+            function initializeDots() {
+                for (let i = 0; i < numDots; i++) {
+                    let x = Math.random() * (container.clientWidth - 20);
+                    let y = Math.random() * (container.clientHeight - 20);
+                    let isTarget = i < numTargets;
+                    let dot = createDot(x, y, isTarget);
+                    dots.push(dot);
+                }
+            }
+
+            function moveDots() {
+                dots.forEach(dot => {
+                    let x = parseFloat(dot.style.left);
+                    let y = parseFloat(dot.style.top);
+                    x += dot.dx;
+                    y += dot.dy;
+
+                    if (x <= 0 || x >= container.clientWidth - 20) dot.dx *= -1;
+                    if (y <= 0 || y >= container.clientHeight - 20) dot.dy *= -1;
+
+                    dot.style.left = `${x}px`;
+                    dot.style.top = `${y}px`;
+                });
+            }
+
+            function startTracking() {
+                initializeDots();
+                setTimeout(() => {
+                    dots.forEach(dot => dot.classList.remove('target'));
+                    setInterval(moveDots, 20);
+                }, 2000);
+            }
+
+            startTracking();
+        });
+    </script>
+</body>
+</html>
