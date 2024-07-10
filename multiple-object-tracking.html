@@ -91,6 +91,8 @@
             const queryParams = getQueryParams();
             const subjectId = queryParams.subject_id || 'unknown';
 
+            let results = [];
+
             function createDot(x, y, isTarget) {
                 let dot = document.createElement('div');
                 dot.classList.add('dot');
@@ -176,18 +178,22 @@
                     }, 1000); // Flash red for 1 second
                 });
 
-                saveResultsToGoogleSheet({
+                results.push({
                     trial: currentTrial + 1,
                     correctSelections: correctSelections.length,
                     totalTargets: trials[currentTrial].numTargets,
-                    accuracy: accuracy,
-                    subjectId: subjectId
+                    accuracy: accuracy
                 });
 
                 setTimeout(nextTrial, 2000); // Move to the next trial after 2 seconds
             }
 
-            function saveResultsToGoogleSheet(data) {
+            function saveResultsToGoogleSheet() {
+                const data = {
+                    subjectId: subjectId,
+                    trials: results
+                };
+
                 fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
                     method: 'POST',
                     mode: 'no-cors',
@@ -195,66 +201,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(data)
-                });
-            }
-
-            function nextTrial() {
-                currentTrial++;
-                if (currentTrial < trials.length) {
-                    startTracking();
-                } else {
-                    alert('All trials completed!');
-                }
-            }
-
-            function showTrialMessage(message) {
-                trialMessage.textContent = message;
-                trialMessage.style.display = 'block';
-                setTimeout(() => {
-                    trialMessage.style.display = 'none';
-                    startTrial();
-                }, 2000);
-            }
-
-            function startTrial() {
-                dots = [];
-                targets = [];
-                selectedDots = [];
-                container.innerHTML = ''; // Clear previous dots and message
-                container.appendChild(trialMessage); // Re-append the trial message
-                container.appendChild(promptMessage); // Re-append the prompt message
-                container.appendChild(errorMessage); // Re-append the error message
-
-                initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
-                
-                setTimeout(() => {
-                    dots.forEach(dot => {
-                        if (dot.classList.contains('target')) {
-                            dot.classList.remove('target');
-                            dot.classList.add('neutral');
-                        }
-                    });
-                    movementInterval = setInterval(moveDots, 20); // Move the dots every 20 milliseconds
-                    
-                    setTimeout(() => {
-                        clearInterval(movementInterval);
-                        dots.forEach(dot => dot.dx = dot.dy = 0); // Freeze all dots
-                        promptMessage.style.display = 'block';
-                        
-                        setTimeout(() => {
-                            promptMessage.style.display = 'none';
-                            checkAccuracy();
-                        }, 4000); // Give participants 4 seconds to select the targets
-                    }, 10000); // Move dots for 10 seconds
-                }, 2000); // Show targets for 2 seconds
-            }
-
-            function startTracking() {
-                showTrialMessage(`Trial ${currentTrial + 1}`);
-            }
-
-            startTracking();
-        });
-    </script>
-</body>
-</html>
+                }).then(response => response.json()).then(data => {
+                    if (data.status === 'success') {
+                        alert('Results saved successfully!');
+                    } else
