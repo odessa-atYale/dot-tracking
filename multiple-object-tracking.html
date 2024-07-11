@@ -66,7 +66,16 @@
             const promptMessage = document.getElementById('prompt-message');
             const errorMessage = document.getElementById('error-message');
             const trials = [
-                { numDots: 10, numTargets: 2 }
+                { numDots: 10, numTargets: 2 },
+                { numDots: 10, numTargets: 2 },
+                { numDots: 10, numTargets: 3 },
+                { numDots: 10, numTargets: 3 },
+                { numDots: 10, numTargets: 4 },
+                { numDots: 10, numTargets: 4 },
+                { numDots: 10, numTargets: 5 },
+                { numDots: 10, numTargets: 5 },
+                { numDots: 10, numTargets: 6 },
+                { numDots: 10, numTargets: 6 }
             ];
             let currentTrial = 0;
             let dots = [];
@@ -138,6 +147,9 @@
 
             function checkAccuracy() {
                 console.log('Checking accuracy');
+                console.log('Selected dots:', selectedDots);
+                console.log('Target dots:', targets);
+
                 if (selectedDots.length !== trials[currentTrial].numTargets) {
                     errorMessage.style.display = 'block';
                     setTimeout(() => {
@@ -148,6 +160,9 @@
 
                 let correctSelections = selectedDots.filter(dot => targets.includes(dot));
                 let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
+
+                console.log('Correct selections:', correctSelections.length);
+                console.log('Accuracy:', accuracy);
 
                 selectedDots.forEach(dot => {
                     if (targets.includes(dot)) {
@@ -165,12 +180,18 @@
                     }, 1000);
                 });
 
-                results.push({
+                const trialData = {
                     trial: currentTrial + 1,
                     correctSelections: correctSelections.length,
                     totalTargets: trials[currentTrial].numTargets,
                     accuracy: accuracy
-                });
+                };
+
+                console.log('Trial data:', trialData);
+
+                results.push(trialData);
+
+                console.log('Results after trial:', results);
 
                 setTimeout(nextTrial, 2000);
             }
