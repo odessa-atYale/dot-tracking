@@ -1,189 +1,254 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const container = document.getElementById('mot-container');
-    const trialMessage = document.getElementById('trial-message');
-    const promptMessage = document.getElementById('prompt-message');
-    const errorMessage = document.getElementById('error-message');
-    const trials = [
-        { numDots: 10, numTargets: 2 }
-    ];
-    let currentTrial = 0;
-    let dots = [];
-    let targets = [];
-    let selectedDots = [];
-    let movementInterval;
-
-    const timestamp = new Date().toISOString();
-
-    let results = [];
-
-    function createDot(x, y, isTarget) {
-        console.log('Creating dot', { x, y, isTarget });
-        let dot = document.createElement('div');
-        dot.classList.add('dot');
-        dot.classList.add(isTarget ? 'target' : 'distractor');
-        dot.style.left = `${x}px`;
-        dot.style.top = `${y}px`;
-        let speed = 5;
-        let angle = Math.random() * 2 * Math.PI;
-        dot.dx = speed * Math.cos(angle);
-        dot.dy = speed * Math.sin(angle);
-        dot.addEventListener('click', () => selectDot(dot));
-        container.appendChild(dot);
-        if (isTarget) {
-            targets.push(dot);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Object Tracking Task</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
         }
-        return dot;
-    }
-
-    function selectDot(dot) {
-        console.log('Selecting dot', dot);
-        if (!selectedDots.includes(dot)) {
-            if (selectedDots.length < trials[currentTrial].numTargets) {
-                dot.classList.add('selected');
-                selectedDots.push(dot);
-            }
-        } else {
-            dot.classList.remove('selected');
-            selectedDots = selectedDots.filter(d => d !== dot);
+        #mot-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
         }
-    }
-
-    function initializeDots(numDots, numTargets) {
-        console.log('Initializing dots', { numDots, numTargets });
-        for (let i = 0; i < numDots; i++) {
-            let x = Math.random() * (container.clientWidth - 20);
-            let y = Math.random() * (container.clientHeight - 20);
-            let isTarget = i < numTargets;
-            let dot = createDot(x, y, isTarget);
-            dots.push(dot);
+        .dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
         }
-    }
-
-    function moveDots() {
-        dots.forEach(dot => {
-            let x = parseFloat(dot.style.left);
-            let y = parseFloat(dot.style.top);
-            x += dot.dx;
-            y += dot.dy;
-
-            if (x <= 0 || x >= container.clientWidth - 20) dot.dx *= -1;
-            if (y <= 0 || y >= container.clientHeight - 20) dot.dy *= -1;
-
-            dot.style.left = `${x}px`;
-            dot.style.top = `${y}px`;
-        });
-    }
-
-    function checkAccuracy() {
-        console.log('Checking accuracy');
-        if (selectedDots.length !== trials[currentTrial].numTargets) {
-            errorMessage.style.display = 'block';
-            setTimeout(() => {
-                errorMessage.style.display = 'none';
-            }, 2000);
-            return;
+        .target {
+            background-color: red;
         }
-
-        let correctSelections = selectedDots.filter(dot => targets.includes(dot));
-        let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
-
-        selectedDots.forEach(dot => {
-            if (targets.includes(dot)) {
-                dot.style.backgroundColor = 'green';
-            } else {
-                dot.style.backgroundColor = 'black';
-            }
-        });
-
-        let missedTargets = targets.filter(dot => !selectedDots.includes(dot));
-        missedTargets.forEach(dot => {
-            dot.style.backgroundColor = 'red';
-            setTimeout(() => {
-                dot.style.backgroundColor = 'blue';
-            }, 1000);
-        });
-
-        results.push({
-            trial: currentTrial + 1,
-            correctSelections: correctSelections.length,
-            totalTargets: trials[currentTrial].numTargets,
-            accuracy: accuracy
-        });
-
-        setTimeout(nextTrial, 2000);
-    }
-
-    function saveResultsToQualtrics() {
-        const data = {
-            timestamp: new Date().toISOString(),
-            trials: results
-        };
-
-        console.log('Saving results to Qualtrics', data);
-        Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
-        Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
-
-        alert('Results saved successfully!');
-    }
-
-    function nextTrial() {
-        console.log('Next trial', currentTrial);
-        currentTrial++;
-        if (currentTrial < trials.length) {
-            startTracking();
-        } else {
-            saveResultsToQualtrics();
-            alert('All trials completed!');
+        .distractor, .neutral {
+            background-color: blue;
         }
-    }
+        .selected {
+            border: 2px solid yellow;
+        }
+        #trial-message, #prompt-message, #error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+        }
+        #prompt-message {
+            font-size: 20px;
+        }
+        #error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="mot-container">
+        <div id="trial-message"></div>
+        <div id="prompt-message">Please select the formerly red dots</div>
+        <div id="error-message">Please select the correct number of targets</div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const container = document.getElementById('mot-container');
+            const trialMessage = document.getElementById('trial-message');
+            const promptMessage = document.getElementById('prompt-message');
+            const errorMessage = document.getElementById('error-message');
+            const trials = [
+                { numDots: 10, numTargets: 2 }
+            ];
+            let currentTrial = 0;
+            let dots = [];
+            let targets = [];
+            let selectedDots = [];
+            let movementInterval;
 
-    function showTrialMessage(message) {
-        console.log('Showing trial message', message);
-        trialMessage.textContent = message;
-        trialMessage.style.display = 'block';
-        setTimeout(() => {
-            trialMessage.style.display = 'none';
-            startTrial();
-        }, 2000);
-    }
+            const timestamp = new Date().toISOString();
 
-    function startTrial() {
-        console.log('Starting trial', currentTrial);
-        dots = [];
-        targets = [];
-        selectedDots = [];
-        container.innerHTML = '';
-        container.appendChild(trialMessage);
-        container.appendChild(promptMessage);
-        container.appendChild(errorMessage);
+            let results = [];
 
-        initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
-        
-        setTimeout(() => {
-            dots.forEach(dot => {
-                if (dot.classList.contains('target')) {
-                    dot.classList.remove('target');
-                    dot.classList.add('neutral');
+            function createDot(x, y, isTarget) {
+                console.log('Creating dot', { x, y, isTarget });
+                let dot = document.createElement('div');
+                dot.classList.add('dot');
+                dot.classList.add(isTarget ? 'target' : 'distractor');
+                dot.style.left = `${x}px`;
+                dot.style.top = `${y}px`;
+                let speed = 5;
+                let angle = Math.random() * 2 * Math.PI;
+                dot.dx = speed * Math.cos(angle);
+                dot.dy = speed * Math.sin(angle);
+                dot.addEventListener('click', () => selectDot(dot));
+                container.appendChild(dot);
+                if (isTarget) {
+                    targets.push(dot);
                 }
-            });
-            movementInterval = setInterval(moveDots, 20);
+                return dot;
+            }
 
-            setTimeout(() => {
-                clearInterval(movementInterval);
-                dots.forEach(dot => dot.dx = dot.dy = 0);
-                promptMessage.style.display = 'block';
+            function selectDot(dot) {
+                console.log('Selecting dot', dot);
+                if (!selectedDots.includes(dot)) {
+                    if (selectedDots.length < trials[currentTrial].numTargets) {
+                        dot.classList.add('selected');
+                        selectedDots.push(dot);
+                    }
+                } else {
+                    dot.classList.remove('selected');
+                    selectedDots = selectedDots.filter(d => d !== dot);
+                }
+            }
 
+            function initializeDots(numDots, numTargets) {
+                console.log('Initializing dots', { numDots, numTargets });
+                for (let i = 0; i < numDots; i++) {
+                    let x = Math.random() * (container.clientWidth - 20);
+                    let y = Math.random() * (container.clientHeight - 20);
+                    let isTarget = i < numTargets;
+                    let dot = createDot(x, y, isTarget);
+                    dots.push(dot);
+                }
+            }
+
+            function moveDots() {
+                dots.forEach(dot => {
+                    let x = parseFloat(dot.style.left);
+                    let y = parseFloat(dot.style.top);
+                    x += dot.dx;
+                    y += dot.dy;
+
+                    if (x <= 0 || x >= container.clientWidth - 20) dot.dx *= -1;
+                    if (y <= 0 || y >= container.clientHeight - 20) dot.dy *= -1;
+
+                    dot.style.left = `${x}px`;
+                    dot.style.top = `${y}px`;
+                });
+            }
+
+            function checkAccuracy() {
+                console.log('Checking accuracy');
+                if (selectedDots.length !== trials[currentTrial].numTargets) {
+                    errorMessage.style.display = 'block';
+                    setTimeout(() => {
+                        errorMessage.style.display = 'none';
+                    }, 2000);
+                    return;
+                }
+
+                let correctSelections = selectedDots.filter(dot => targets.includes(dot));
+                let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
+
+                selectedDots.forEach(dot => {
+                    if (targets.includes(dot)) {
+                        dot.style.backgroundColor = 'green';
+                    } else {
+                        dot.style.backgroundColor = 'black';
+                    }
+                });
+
+                let missedTargets = targets.filter(dot => !selectedDots.includes(dot));
+                missedTargets.forEach(dot => {
+                    dot.style.backgroundColor = 'red';
+                    setTimeout(() => {
+                        dot.style.backgroundColor = 'blue';
+                    }, 1000);
+                });
+
+                results.push({
+                    trial: currentTrial + 1,
+                    correctSelections: correctSelections.length,
+                    totalTargets: trials[currentTrial].numTargets,
+                    accuracy: accuracy
+                });
+
+                setTimeout(nextTrial, 2000);
+            }
+
+            function saveResultsToQualtrics() {
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    trials: results
+                };
+
+                console.log('Saving results to Qualtrics', data);
+                Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
+                Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
+
+                alert('Results saved successfully!');
+            }
+
+            function nextTrial() {
+                console.log('Next trial', currentTrial);
+                currentTrial++;
+                if (currentTrial < trials.length) {
+                    startTracking();
+                } else {
+                    saveResultsToQualtrics();
+                    alert('All trials completed!');
+                }
+            }
+
+            function showTrialMessage(message) {
+                console.log('Showing trial message', message);
+                trialMessage.textContent = message;
+                trialMessage.style.display = 'block';
                 setTimeout(() => {
-                    promptMessage.style.display = 'none';
-                    checkAccuracy();
-                }, 4000);
-            }, 10000);
-        }, 2000);
-    }
+                    trialMessage.style.display = 'none';
+                    startTrial();
+                }, 2000);
+            }
 
-    function startTracking() {
-        showTrialMessage(`Trial ${currentTrial + 1}`);
-    }
+            function startTrial() {
+                console.log('Starting trial', currentTrial);
+                dots = [];
+                targets = [];
+                selectedDots = [];
+                container.innerHTML = '';
+                container.appendChild(trialMessage);
+                container.appendChild(promptMessage);
+                container.appendChild(errorMessage);
 
-    startTracking();
-});
+                initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
+                
+                setTimeout(() => {
+                    dots.forEach(dot => {
+                        if (dot.classList.contains('target')) {
+                            dot.classList.remove('target');
+                            dot.classList.add('neutral');
+                        }
+                    });
+                    movementInterval = setInterval(moveDots, 20);
+
+                    setTimeout(() => {
+                        clearInterval(movementInterval);
+                        dots.forEach(dot => dot.dx = dot.dy = 0);
+                        promptMessage.style.display = 'block';
+
+                        setTimeout(() => {
+                            promptMessage.style.display = 'none';
+                            checkAccuracy();
+                        }, 4000);
+                    }, 10000);
+                }, 2000);
+            }
+
+            function startTracking() {
+                showTrialMessage(`Trial ${currentTrial + 1}`);
+            }
+
+            startTracking();
+        });
+    </script>
+</body>
+</html>
