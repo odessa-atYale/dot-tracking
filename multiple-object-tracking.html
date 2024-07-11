@@ -182,32 +182,42 @@
             }
 
             function saveResultsToGoogleSheet() {
-                const data = {
-                    timestamp: timestamp,
-                    trials: results
-                };
+    const data = {
+        timestamp: new Date().toISOString(),
+        trials: results
+    };
 
-                fetch('https://script.google.com/macros/s/AKfycbznpWC06MAwIRiIVLEYgHwaXIiZSqrpyQcjxJ2ofhddcrfVpX3aB8KZKqSvdRl80kDY6A/exec', {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                }).then(response => {
-                    console.log('Response:', response);
-                    return response.json();
-                }).then(data => {
-                    if (data.status === 'success') {
-                        alert('Results saved successfully!');
-                    } else {
-                        alert('Error saving results: ' + data.message);
-                    }
-                }).catch(error => {
-                    console.error('Error:', error);
-                    alert('Error saving results: ' + error.message);
-                });
+    fetch('https://script.google.com/macros/s/AKfycbznpWC06MAwIRiIVLEYgHwaXIiZSqrpyQcjxJ2ofhddcrfVpX3aB8KZKqSvdRl80kDY6A/exec', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.text(); // Use text() instead of json() to inspect the raw response
+    }).then(text => {
+        try {
+            const data = JSON.parse(text);
+            if (data.status === 'success') {
+                alert('Results saved successfully!');
+            } else {
+                alert('Error saving results: ' + data.message);
             }
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+            console.error('Response text:', text);
+            alert('Error saving results: ' + error.message);
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+        alert('Error saving results: ' + error.message);
+    });
+}
+
 
             function nextTrial() {
                 currentTrial++;
