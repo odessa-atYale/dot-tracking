@@ -147,6 +147,8 @@
                     errorMessage.style.display = 'block';
                     setTimeout(() => {
                         errorMessage.style.display = 'none';
+                        selectedDots.forEach(dot => dot.classList.remove('selected'));
+                        selectedDots = [];
                     }, 2000);
                     return;
                 }
