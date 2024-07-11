@@ -66,11 +66,7 @@
             const promptMessage = document.getElementById('prompt-message');
             const errorMessage = document.getElementById('error-message');
             const trials = [
-                { numDots: 10, numTargets: 2 }, { numDots: 10, numTargets: 2 },
-                { numDots: 10, numTargets: 3 }, { numDots: 10, numTargets: 3 },
-                { numDots: 10, numTargets: 4 }, { numDots: 10, numTargets: 4 },
-                { numDots: 10, numTargets: 5 }, { numDots: 10, numTargets: 5 },
-                { numDots: 10, numTargets: 6 }, { numDots: 10, numTargets: 6 }
+                { numDots: 10, numTargets: 2 }
             ];
             let currentTrial = 0;
             let dots = [];
@@ -78,7 +74,6 @@
             let selectedDots = [];
             let movementInterval;
 
-            // Function to get query parameters
             function getQueryParams() {
                 const params = {};
                 window.location.search.substring(1).split("&").forEach(function(param) {
@@ -99,10 +94,10 @@
                 dot.classList.add(isTarget ? 'target' : 'distractor');
                 dot.style.left = `${x}px`;
                 dot.style.top = `${y}px`;
-                let speed = 5; // Fixed fast speed for all dots
-                let angle = Math.random() * 2 * Math.PI; // Random angle
-                dot.dx = speed * Math.cos(angle); // Fixed horizontal speed
-                dot.dy = speed * Math.sin(angle); // Fixed vertical speed
+                let speed = 5;
+                let angle = Math.random() * 2 * Math.PI;
+                dot.dx = speed * Math.cos(angle);
+                dot.dy = speed * Math.sin(angle);
                 dot.addEventListener('click', () => selectDot(dot));
                 container.appendChild(dot);
                 if (isTarget) {
@@ -160,7 +155,6 @@
                 let correctSelections = selectedDots.filter(dot => targets.includes(dot));
                 let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
 
-                // Highlight correct selections in green and incorrect in black
                 selectedDots.forEach(dot => {
                     if (targets.includes(dot)) {
                         dot.style.backgroundColor = 'green';
@@ -169,13 +163,12 @@
                     }
                 });
 
-                // Flash missed targets in red
                 let missedTargets = targets.filter(dot => !selectedDots.includes(dot));
                 missedTargets.forEach(dot => {
                     dot.style.backgroundColor = 'red';
                     setTimeout(() => {
                         dot.style.backgroundColor = 'blue';
-                    }, 1000); // Flash red for 1 second
+                    }, 1000);
                 });
 
                 results.push({
@@ -185,7 +178,7 @@
                     accuracy: accuracy
                 });
 
-                setTimeout(nextTrial, 2000); // Move to the next trial after 2 seconds
+                setTimeout(nextTrial, 2000);
             }
 
             function saveResultsToGoogleSheet() {
@@ -236,10 +229,10 @@
                 dots = [];
                 targets = [];
                 selectedDots = [];
-                container.innerHTML = ''; // Clear previous dots and message
-                container.appendChild(trialMessage); // Re-append the trial message
-                container.appendChild(promptMessage); // Re-append the prompt message
-                container.appendChild(errorMessage); // Re-append the error message
+                container.innerHTML = '';
+                container.appendChild(trialMessage);
+                container.appendChild(promptMessage);
+                container.appendChild(errorMessage);
 
                 initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
                 
@@ -250,19 +243,27 @@
                             dot.classList.add('neutral');
                         }
                     });
-                    movementInterval = setInterval(moveDots, 20); // Move the dots every 20 milliseconds
-                    
+                    movementInterval = setInterval(moveDots, 20);
+
                     setTimeout(() => {
                         clearInterval(movementInterval);
-                        dots.forEach(dot => dot.dx = dot.dy = 0); // Freeze all dots
+                        dots.forEach(dot => dot.dx = dot.dy = 0);
                         promptMessage.style.display = 'block';
-                        
+
                         setTimeout(() => {
                             promptMessage.style.display = 'none';
                             checkAccuracy();
-                        }, 4000); // Give participants 4 seconds to select the targets
-                    }, 10000); // Move dots for 10 seconds
-                }, 2000); // Show targets for 2 seconds
+                        }, 4000);
+                    }, 10000);
+                }, 2000);
             }
 
-            function start
+            function startTracking() {
+                showTrialMessage(`Trial ${currentTrial + 1}`);
+            }
+
+            startTracking();
+        });
+    </script>
+</body>
+</html>
