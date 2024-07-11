@@ -182,6 +182,17 @@
 
                 alert('Results saved successfully!');
             }
+            
+
+        function saveResultsLocally() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                trials: results
+            };
+
+        localStorage.setItem('motTaskResults', JSON.stringify(data));
+        alert('Results saved locally!');
+    }   
 
             function nextTrial() {
                 currentTrial++;
