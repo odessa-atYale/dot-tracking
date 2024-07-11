@@ -91,6 +91,8 @@
             const queryParams = getQueryParams();
             const subjectId = queryParams.subject_id || 'unknown';
 
+            let results = [];
+
             function createDot(x, y, isTarget) {
                 let dot = document.createElement('div');
                 dot.classList.add('dot');
@@ -176,25 +178,38 @@
                     }, 1000); // Flash red for 1 second
                 });
 
-                saveResultsToGoogleSheet({
+                results.push({
                     trial: currentTrial + 1,
                     correctSelections: correctSelections.length,
                     totalTargets: trials[currentTrial].numTargets,
-                    accuracy: accuracy,
-                    subjectId: subjectId
+                    accuracy: accuracy
                 });
 
                 setTimeout(nextTrial, 2000); // Move to the next trial after 2 seconds
             }
 
-            function saveResultsToGoogleSheet(data) {
-                fetch('https://script.google.com/macros/s/1FFe4DVrnokPKFJDltNgfs7zxP4WvGu5ew_VNxzEv9G8j5Tw-ZOFjt6ad/exec', {
+            function saveResultsToGoogleSheet() {
+                const data = {
+                    subjectId: subjectId,
+                    trials: results
+                };
+
+                fetch('https://script.google.com/macros/s/AKfycbznpWC06MAwIRiIVLEYgHwaXIiZSqrpyQcjxJ2ofhddcrfVpX3aB8KZKqSvdRl80kDY6A/exec', {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(data)
+                }).then(response => response.json()).then(data => {
+                    if (data.status === 'success') {
+                        alert('Results saved successfully!');
+                    } else {
+                        alert('Error saving results.');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error saving results.');
                 });
             }
 
@@ -203,6 +218,7 @@
                 if (currentTrial < trials.length) {
                     startTracking();
                 } else {
+                    saveResultsToGoogleSheet();
                     alert('All trials completed!');
                 }
             }
@@ -249,12 +265,4 @@
                 }, 2000); // Show targets for 2 seconds
             }
 
-            function startTracking() {
-                showTrialMessage(`Trial ${currentTrial + 1}`);
-            }
-
-            startTracking();
-        });
-    </script>
-</body>
-</html>
+            function start
