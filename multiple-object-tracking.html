@@ -74,16 +74,6 @@
             let selectedDots = [];
             let movementInterval;
 
-            function getQueryParams() {
-                const params = {};
-                window.location.search.substring(1).split("&").forEach(function(param) {
-                    const [key, value] = param.split("=");
-                    params[key] = decodeURIComponent(value);
-                });
-                return params;
-            }
-
-            const queryParams = getQueryParams();
             const timestamp = new Date().toISOString();
 
             let results = [];
@@ -181,26 +171,24 @@
                 setTimeout(nextTrial, 2000);
             }
 
-  function saveResultsToQualtrics() {
-    const data = {
-        timestamp: new Date().toISOString(),
-        trials: results
-    };
+            function saveResultsToQualtrics() {
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    trials: results
+                };
 
-    // Assuming 'results' is the name of the Embedded Data field in Qualtrics
-    Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
-    Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
+                Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
+                Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
 
-    alert('Results saved successfully!');
-}
-
+                alert('Results saved successfully!');
+            }
 
             function nextTrial() {
                 currentTrial++;
                 if (currentTrial < trials.length) {
                     startTracking();
                 } else {
-                    saveResultsToGoogleSheet();
+                    saveResultsToQualtrics();
                     alert('All trials completed!');
                 }
             }
