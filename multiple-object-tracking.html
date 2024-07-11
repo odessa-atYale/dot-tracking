@@ -182,10 +182,14 @@
                 };
 
                 console.log('Saving results to Qualtrics', data);
-                Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
-                Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
-
-                alert('Results saved successfully!');
+                if (typeof Qualtrics !== 'undefined' && Qualtrics.SurveyEngine) {
+                    Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
+                    Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
+                    alert('Results saved successfully!');
+                } else {
+                    console.log('Qualtrics SurveyEngine not defined. Running locally.');
+                    console.log('Results:', data);
+                }
             }
 
             function nextTrial() {
