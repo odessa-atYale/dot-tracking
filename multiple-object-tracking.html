@@ -176,21 +176,24 @@
                 setTimeout(nextTrial, 2000);
             }
 
-            function saveResultsToQualtrics() {
+          function saveResultsToQualtrics() {
                 const data = {
                     timestamp: new Date().toISOString(),
                     trials: results
                 };
 
+                console.log('Attempting to save results to Qualtrics:', data);
                 if (typeof Qualtrics !== 'undefined' && Qualtrics.SurveyEngine) {
+                    console.log('Qualtrics SurveyEngine detected.');
                     Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
                     Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
                     alert('Results saved successfully!');
                 } else {
-                    console.log('Qualtrics SurveyEngine not defined. Running locally.');
+                    console.error('Qualtrics SurveyEngine not defined. Running locally.');
                     console.log('Results:', data);
-                }
-            }
+
+        }
+    }
 
             function nextTrial() {
                 currentTrial++;
