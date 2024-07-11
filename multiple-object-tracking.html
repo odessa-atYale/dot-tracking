@@ -88,7 +88,6 @@
             let results = [];
 
             function createDot(x, y, isTarget) {
-                console.log('Creating dot', { x, y, isTarget });
                 let dot = document.createElement('div');
                 dot.classList.add('dot');
                 dot.classList.add(isTarget ? 'target' : 'distractor');
@@ -107,7 +106,6 @@
             }
 
             function selectDot(dot) {
-                console.log('Selecting dot', dot);
                 if (!selectedDots.includes(dot)) {
                     if (selectedDots.length < trials[currentTrial].numTargets) {
                         dot.classList.add('selected');
@@ -120,7 +118,6 @@
             }
 
             function initializeDots(numDots, numTargets) {
-                console.log('Initializing dots', { numDots, numTargets });
                 for (let i = 0; i < numDots; i++) {
                     let x = Math.random() * (container.clientWidth - 20);
                     let y = Math.random() * (container.clientHeight - 20);
@@ -146,10 +143,6 @@
             }
 
             function checkAccuracy() {
-                console.log('Checking accuracy');
-                console.log('Selected dots:', selectedDots);
-                console.log('Target dots:', targets);
-
                 if (selectedDots.length !== trials[currentTrial].numTargets) {
                     errorMessage.style.display = 'block';
                     setTimeout(() => {
@@ -160,9 +153,6 @@
 
                 let correctSelections = selectedDots.filter(dot => targets.includes(dot));
                 let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
-
-                console.log('Correct selections:', correctSelections.length);
-                console.log('Accuracy:', accuracy);
 
                 selectedDots.forEach(dot => {
                     if (targets.includes(dot)) {
@@ -187,11 +177,7 @@
                     accuracy: accuracy
                 };
 
-                console.log('Trial data:', trialData);
-
                 results.push(trialData);
-
-                console.log('Results after trial:', results);
 
                 setTimeout(nextTrial, 2000);
             }
@@ -202,7 +188,6 @@
                     trials: results
                 };
 
-                console.log('Saving results to Qualtrics', data);
                 if (typeof Qualtrics !== 'undefined' && Qualtrics.SurveyEngine) {
                     Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
                     Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
@@ -214,7 +199,6 @@
             }
 
             function nextTrial() {
-                console.log('Next trial', currentTrial);
                 currentTrial++;
                 if (currentTrial < trials.length) {
                     startTracking();
@@ -225,7 +209,6 @@
             }
 
             function showTrialMessage(message) {
-                console.log('Showing trial message', message);
                 trialMessage.textContent = message;
                 trialMessage.style.display = 'block';
                 setTimeout(() => {
@@ -235,7 +218,6 @@
             }
 
             function startTrial() {
-                console.log('Starting trial', currentTrial);
                 dots = [];
                 targets = [];
                 selectedDots = [];
