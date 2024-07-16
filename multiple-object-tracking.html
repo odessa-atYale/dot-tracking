@@ -243,6 +243,17 @@
             }
 
             startTracking();
+             });
+                Qualtrics.SurveyEngine.addOnload(function() {
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'saveResults') {
+                    const results = event.data.data;
+                    console.log('Received results from iframe:', results);
+                    Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(results));
+                    Qualtrics.SurveyEngine.setEmbeddedData('timestamp', results.timestamp);
+                    alert('Results saved successfully!');
+                }
+        });
         });
     </script>
 </body>
