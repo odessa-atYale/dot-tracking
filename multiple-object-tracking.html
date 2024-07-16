@@ -243,8 +243,10 @@
             }
 
             startTracking();
-             });
-                Qualtrics.SurveyEngine.addOnload(function() {
+        });
+
+        // Qualtrics integration
+        Qualtrics.SurveyEngine.addOnload(function() {
             window.addEventListener('message', function(event) {
                 if (event.data.type === 'saveResults') {
                     const results = event.data.data;
@@ -253,7 +255,7 @@
                     Qualtrics.SurveyEngine.setEmbeddedData('timestamp', results.timestamp);
                     alert('Results saved successfully!');
                 }
-        });
+            });
         });
     </script>
 </body>
