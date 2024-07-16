@@ -67,15 +67,7 @@
             const errorMessage = document.getElementById('error-message');
             const trials = [
                 { numDots: 10, numTargets: 2 },
-                { numDots: 10, numTargets: 2 },
-                { numDots: 10, numTargets: 3 },
-                { numDots: 10, numTargets: 3 },
-                { numDots: 10, numTargets: 4 },
-                { numDots: 10, numTargets: 4 },
-                { numDots: 10, numTargets: 5 },
-                { numDots: 10, numTargets: 5 },
-                { numDots: 10, numTargets: 6 },
-                { numDots: 10, numTargets: 6 }
+                { numDots: 10, numTargets: 3 }
             ];
             let currentTrial = 0;
             let dots = [];
@@ -176,13 +168,13 @@
                 setTimeout(nextTrial, 2000);
             }
 
-          function saveResultsToQualtrics() {
+            function saveResultsToQualtrics() {
                 const data = {
                     timestamp: new Date().toISOString(),
                     trials: results
                 };
                 console.log('Sending results to parent:', data);
-                    parent.postMessage({ type: 'saveResults', data: data }, '*');
+                parent.postMessage({ type: 'saveResults', data: data }, '*');
                 console.log('Attempting to save results to Qualtrics:', data);
                 if (typeof Qualtrics !== 'undefined' && Qualtrics.SurveyEngine) {
                     console.log('Qualtrics SurveyEngine detected.');
@@ -192,9 +184,8 @@
                 } else {
                     console.error('Qualtrics SurveyEngine not defined. Running locally.');
                     console.log('Results:', data);
-
-        }
-    }
+                }
+            }
 
             function nextTrial() {
                 currentTrial++;
