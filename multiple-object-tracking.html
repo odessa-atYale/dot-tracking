@@ -59,6 +59,7 @@
         <div id="prompt-message">Please select the formerly red dots</div>
         <div id="error-message">Please select the correct number of targets</div>
     </div>
+    <script src="https://cdn.qualtrics.com/WRAPI/WRAPI.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('mot-container');
@@ -245,7 +246,6 @@
             startTracking();
         });
 
-        // Qualtrics integration
         Qualtrics.SurveyEngine.addOnload(function() {
             window.addEventListener('message', function(event) {
                 if (event.data.type === 'saveResults') {
