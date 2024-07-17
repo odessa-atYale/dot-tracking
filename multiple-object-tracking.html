@@ -5,52 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multiple Object Tracking Task</title>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        #mot-container {
-            position: relative;
-            width: 800px;
-            height: 600px;
-            background-color: #ffffff;
-            border: 1px solid #ccc;
-        }
-        .dot {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .target {
-            background-color: red;
-        }
-        .distractor, .neutral {
-            background-color: blue;
-        }
-        .selected {
-            border: 2px solid yellow;
-        }
-        #trial-message, #prompt-message, #error-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            font-weight: bold;
-            display: none;
-        }
-        #prompt-message {
-            font-size: 20px;
-        }
-        #error-message {
-            color: red;
-        }
+        /* Your existing CSS */
     </style>
 </head>
 <body>
@@ -59,7 +14,6 @@
         <div id="prompt-message">Please select the formerly red dots</div>
         <div id="error-message">Please select the correct number of targets</div>
     </div>
-    <script src="https://cdn.qualtrics.com/WRAPI/WRAPI.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('mot-container');
@@ -176,16 +130,20 @@
                 };
                 console.log('Sending results to parent:', data);
                 parent.postMessage({ type: 'saveResults', data: data }, '*');
-                console.log('Attempting to save results to Qualtrics:', data);
-                if (typeof Qualtrics !== 'undefined' && Qualtrics.SurveyEngine) {
-                    console.log('Qualtrics SurveyEngine detected.');
-                    Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(data));
-                    Qualtrics.SurveyEngine.setEmbeddedData('timestamp', data.timestamp);
-                    alert('Results saved successfully!');
-                } else {
-                    console.error('Qualtrics SurveyEngine not defined. Running locally.');
-                    console.log('Results:', data);
-                }
+
+                // Send results to Qualtrics web service
+                const xhr = new XMLHttpRequest();
+                const url = 'https://multiple-object-tracking.glitch.me'; // Replace with your Qualtrics web service URL
+                xhr.open('POST', url, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        console.log('Results sent to Qualtrics web service');
+                    } else if (xhr.readyState === 4) {
+                        console.error('Failed to send results to Qualtrics web service');
+                    }
+                };
+                xhr.send(JSON.stringify(data));
             }
 
             function nextTrial() {
@@ -245,18 +203,6 @@
 
             startTracking();
         });
-
-        Qualtrics.SurveyEngine.addOnload(function() {
-            window.addEventListener('message', function(event) {
-                if (event.data.type === 'saveResults') {
-                    const results = event.data.data;
-                    console.log('Received results from iframe:', results);
-                    Qualtrics.SurveyEngine.setEmbeddedData('results', JSON.stringify(results));
-                    Qualtrics.SurveyEngine.setEmbeddedData('timestamp', results.timestamp);
-                    alert('Results saved successfully!');
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+       </script>
+   </body>
+   </html>
