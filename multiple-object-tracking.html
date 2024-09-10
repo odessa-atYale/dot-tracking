@@ -127,7 +127,7 @@
             return dot;
         }
 
-        function flashTargets(callback) {
+         function flashTargets(callback) {
             let flashCount = 0;
             const maxFlashes = 3;
             const flashInterval = setInterval(() => {
@@ -137,7 +137,8 @@
                 flashCount++;
                 if (flashCount > maxFlashes * 2) {
                     clearInterval(flashInterval);
-                    targets.forEach(dot => dot.style.backgroundColor = 'red');  // Set them red before movement
+                    // Make sure all dots return to blue before movement starts
+                    targets.forEach(dot => dot.style.backgroundColor = 'blue');
                     callback();  // Start the movement after flashing
                 }
             }, 500);  // Flash every 500ms
