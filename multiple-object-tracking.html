@@ -225,15 +225,15 @@
         }
 
         function nextTrial() {
-            currentTrial++;
-            if (currentTrial < trials.length) {
-                startTracking();
-            } else {
-                saveResultsToQualtrics();
-                alert('All trials completed!');
-            }
+        currentTrial++;
+        if (currentTrial < trials.length) {
+            startTracking();
+        } else {
+            saveResultsToQualtrics();
+            alert('All trials completed!');
+            showCompletionMessage();  // Show completion message at the end
         }
-
+    }
         function showTrialMessage(message) {
             trialMessage.textContent = message;
             trialMessage.style.display = 'block';
@@ -276,6 +276,19 @@
         }
 
         startTracking();
+
+        function showCompletionMessage() {
+        const completionMessage = document.createElement('div');
+        completionMessage.textContent = 'Important: Please click Task Done';
+        completionMessage.style.position = 'absolute';
+        completionMessage.style.top = '50%';
+        completionMessage.style.left = '50%';
+        completionMessage.style.transform = 'translate(-50%, -50%)';
+        completionMessage.style.fontSize = '24px';
+        completionMessage.style.fontWeight = 'bold';
+        completionMessage.style.color = 'green';
+        container.appendChild(completionMessage);
+    }
     });
 </script>
 
