@@ -278,6 +278,7 @@
         startTracking();
 
         function showCompletionMessage() {
+        container.innerHTML = '';
         const completionMessage = document.createElement('div');
         completionMessage.textContent = 'Important: Please click Task Done';
         completionMessage.style.position = 'absolute';
