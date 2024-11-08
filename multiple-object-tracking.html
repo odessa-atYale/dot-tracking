@@ -146,4 +146,114 @@
                 let isTarget = i < numTargets;
                 let dot = createDot(x, y, isTarget);
                 dots.push(dot);
-          
+            }
+        }
+
+        function moveDots() {
+            dots.forEach(dot => {
+                let x = parseFloat(dot.style.left);
+                let y = parseFloat(dot.style.top);
+                x += dot.dx;
+                y += dot.dy;
+
+                if (x <= 0 || x >= container.clientWidth - 20) dot.dx *= -1;
+                if (y <= 0 || y >= container.clientHeight - 20) dot.dy *= -1;
+
+                dot.style.left = `${x}px`;
+                dot.style.top = `${y}px`;
+            });
+        }
+
+        function checkAccuracy() {
+            let correctSelections = selectedDots.filter(dot => targets.includes(dot));
+            let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
+
+            selectedDots.forEach(dot => {
+                dot.style.backgroundColor = targets.includes(dot) ? 'green' : 'black';
+            });
+
+            let missedTargets = targets.filter(dot => !selectedDots.includes(dot));
+            missedTargets.forEach(dot => {
+                dot.style.backgroundColor = 'red';
+                setTimeout(() => dot.style.backgroundColor = 'blue', 1000);
+            });
+
+            results.push({
+                trial: currentTrial + 1,
+                correctSelections: correctSelections.length,
+                totalTargets: trials[currentTrial].numTargets,
+                accuracy: accuracy
+            });
+
+            setTimeout(nextTrial, 2000);
+        }
+
+        function saveResultsToQualtrics() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                trials: results
+            };
+            parent.postMessage({ type: 'saveResults', data: data }, '*');
+        }
+
+        function nextTrial() {
+            currentTrial++;
+            if (currentTrial < trials.length) {
+                startTracking();
+            } else {
+                saveResultsToQualtrics();
+                alert('All trials completed!');
+                showCompletionMessage();
+            }
+        }
+
+        function showTrialMessage(message) {
+            trialMessage.textContent = message;
+            trialMessage.style.display = 'block';
+            setTimeout(() => {
+                trialMessage.style.display = 'none';
+                startTrial();
+            }, 2000);
+        }
+
+        function startTrial() {
+            container.innerHTML = '';
+            initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
+            
+            setTimeout(() => {
+                flashTargets(() => {
+                    movementInterval = setInterval(moveDots, 20);
+
+                    setTimeout(() => {
+                        clearInterval(movementInterval);
+                        dots.forEach(dot => dot.dx = dot.dy = 0);  // Stop movement
+                        promptMessage.style.display = 'block';
+
+                        setTimeout(() => promptMessage.style.display = 'none', 4000);
+                    }, 10000);
+                });
+            }, 2000);
+        }
+
+        function startTracking() {
+            showTrialMessage(`Trial ${currentTrial + 1}`);
+        }
+
+        function showCompletionMessage() {
+            container.innerHTML = '';
+            const completionMessage = document.createElement('div');
+            completionMessage.textContent = 'Task completed! Click "Close Window"';
+            completionMessage.style.position = 'absolute';
+            completionMessage.style.top = '50%';
+            completionMessage.style.left = '50%';
+            completionMessage.style.transform = 'translate(-50%, -50%)';
+            completionMessage.style.fontSize = '24px';
+            completionMessage.style.color = 'green';
+            container.appendChild(completionMessage);
+        }
+
+        startTracking();
+    });
+    </script>
+</body>
+</html>
