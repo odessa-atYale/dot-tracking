@@ -14,12 +14,11 @@
             background-color: #f0f0f0;
         }
         #mot-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #ffffff;
+            position: relative;
+            width: 1000px;  /* Fixed width for larger screens */
+            height: 700px; /* Fixed height for larger screens */
+            background-color: #ffffff;
+            border: 1px solid #ccc;
         }
         .dot {
             position: absolute;
@@ -31,7 +30,7 @@
         .target {
             background-color: red;
         }
-        .distractor, .neutral {
+        .distractor {
             background-color: blue;
         }
         .selected {
@@ -66,18 +65,21 @@
         const trialMessage = document.getElementById('trial-message');
         const promptMessage = document.getElementById('prompt-message');
         const errorMessage = document.getElementById('error-message');
+
+        // Updated trials to match the new dot-to-target configuration
         const trials = [
             { numDots: 10, numTargets: 2 },
             { numDots: 10, numTargets: 2 },
-            { numDots: 10, numTargets: 3 },
-            { numDots: 10, numTargets: 3 },
-            { numDots: 12, numTargets: 4 },
-            { numDots: 12, numTargets: 4 },
+            { numDots: 12, numTargets: 3 },
+            { numDots: 12, numTargets: 3 },
+            { numDots: 14, numTargets: 4 },
+            { numDots: 14, numTargets: 4 },
             { numDots: 15, numTargets: 5 },
             { numDots: 15, numTargets: 5 },
-            { numDots: 18, numTargets: 6 },
-            { numDots: 18, numTargets: 6 }
+            { numDots: 16, numTargets: 6 },
+            { numDots: 16, numTargets: 6 }
         ];
+        
         let currentTrial = 0;
         let dots = [];
         let targets = [];
@@ -258,7 +260,7 @@
         function showCompletionMessage() {
             container.innerHTML = '';
             const completionMessage = document.createElement('div');
-            completionMessage.textContent = 'Important: Please click "Dot Tracking Task Completed"';
+            completionMessage.textContent = 'Important: Please click "Dot Tracking Task Completed", then click "Close Window" button';
             completionMessage.style.position = 'absolute';
             completionMessage.style.top = '50%';
             completionMessage.style.left = '50%';
