@@ -207,14 +207,16 @@
             }
         }
 
-        function showTrialMessage(message) {
-            trialMessage.textContent = message;
-            trialMessage.style.display = 'block';
-            setTimeout(() => {
-                trialMessage.style.display = 'none';
-                startTrial();
-            }, 2000);
-        }
+        function showTrialMessage() {
+        const message = `${currentTrial + 1}/10 trials`; // Format as "x/10 trials"
+        trialMessage.textContent = message;
+        trialMessage.style.display = 'block';
+        
+        setTimeout(() => {
+            trialMessage.style.display = 'none';
+            startTrial();
+        }, 2000); // Show the message for 2 seconds before starting the trial
+    }
 
         function startTrial() {
             container.innerHTML = '';
@@ -236,7 +238,7 @@
         }
 
         function startTracking() {
-            showTrialMessage(`Trial ${currentTrial + 1}`);
+            showTrialMessage();
         }
 
         function showCompletionMessage() {
