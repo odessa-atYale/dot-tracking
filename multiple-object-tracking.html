@@ -15,10 +15,11 @@
         }
         #mot-container {
             position: relative;
-            width: 9000px;  /* Fixed width for larger screens */
-            height: 600px; /* Fixed height for larger screens */
+            width: 900px;  /* Adjusted width */
+            height: 600px;  /* Adjusted height */
             background-color: #ffffff;
             border: 1px solid #ccc;
+            overflow: hidden;  /* Prevents scrolling */
         }
         .dot {
             position: absolute;
@@ -66,7 +67,6 @@
         const promptMessage = document.getElementById('prompt-message');
         const errorMessage = document.getElementById('error-message');
 
-        // Updated trials to match the new dot-to-target configuration
         const trials = [
             { numDots: 10, numTargets: 2 },
             { numDots: 10, numTargets: 2 },
@@ -87,9 +87,7 @@
         let movementInterval;
 
         let results = [];
-
-        // Adjusted speed to match Alvarez study
-        let speed = 4.8;  // 4.8 pixels per frame at 60fps
+        let speed = 4.8;
 
         function createDot(x, y, isTarget) {
             let dot = document.createElement('div');
@@ -119,7 +117,7 @@
                 if (flashCount > maxFlashes * 2) {
                     clearInterval(flashInterval);
                     targets.forEach(dot => dot.style.backgroundColor = 'blue');
-                    callback();  // Start the movement after flashing
+                    callback();  // Start movement only after flashing is complete
                 }
             }, 500);
         }
@@ -139,138 +137,13 @@
         }
 
         function initializeDots(numDots, numTargets) {
+            dots = [];
+            targets = [];
+            selectedDots = [];
             for (let i = 0; i < numDots; i++) {
                 let x = Math.random() * (container.clientWidth - 20);
                 let y = Math.random() * (container.clientHeight - 20);
                 let isTarget = i < numTargets;
                 let dot = createDot(x, y, isTarget);
                 dots.push(dot);
-            }
-        }
-
-        function moveDots() {
-            dots.forEach(dot => {
-                let x = parseFloat(dot.style.left);
-                let y = parseFloat(dot.style.top);
-                x += dot.dx;
-                y += dot.dy;
-
-                if (x <= 0 || x >= container.clientWidth - 20) dot.dx *= -1;
-                if (y <= 0 || y >= container.clientHeight - 20) dot.dy *= -1;
-
-                dot.style.left = `${x}px`;
-                dot.style.top = `${y}px`;
-            });
-        }
-
-        function checkAccuracy() {
-            let correctSelections = selectedDots.filter(dot => targets.includes(dot));
-            let accuracy = (correctSelections.length / trials[currentTrial].numTargets) * 100;
-
-            selectedDots.forEach(dot => {
-                if (targets.includes(dot)) {
-                    dot.style.backgroundColor = 'green';
-                } else {
-                    dot.style.backgroundColor = 'black';
-                }
-            });
-
-            let missedTargets = targets.filter(dot => !selectedDots.includes(dot));
-            missedTargets.forEach(dot => {
-                dot.style.backgroundColor = 'red';
-                setTimeout(() => {
-                    dot.style.backgroundColor = 'blue';
-                }, 1000);
-            });
-
-            const trialData = {
-                trial: currentTrial + 1,
-                correctSelections: correctSelections.length,
-                totalTargets: trials[currentTrial].numTargets,
-                accuracy: accuracy
-            };
-
-            results.push(trialData);
-
-            setTimeout(nextTrial, 2000);
-        }
-
-        function saveResultsToQualtrics() {
-            const data = {
-                timestamp: new Date().toISOString(),
-                trials: results
-            };
-            parent.postMessage({ type: 'saveResults', data: data }, '*');
-        }
-
-        function nextTrial() {
-            currentTrial++;
-            if (currentTrial < trials.length) {
-                startTracking();
-            } else {
-                saveResultsToQualtrics();
-                alert('All trials completed!');
-                showCompletionMessage();
-            }
-        }
-
-        function showTrialMessage(message) {
-            trialMessage.textContent = message;
-            trialMessage.style.display = 'block';
-            setTimeout(() => {
-                trialMessage.style.display = 'none';
-                startTrial();
-            }, 2000);
-        }
-
-        function startTrial() {
-            dots = [];
-            targets = [];
-            selectedDots = [];
-            container.innerHTML = '';
-            container.appendChild(trialMessage);
-            container.appendChild(promptMessage);
-            container.appendChild(errorMessage);
-
-            initializeDots(trials[currentTrial].numDots, trials[currentTrial].numTargets);
-            
-            setTimeout(() => {
-                flashTargets(() => {
-                    movementInterval = setInterval(moveDots, 20);
-
-                    setTimeout(() => {
-                        clearInterval(movementInterval);
-                        dots.forEach(dot => dot.dx = dot.dy = 0);
-                        promptMessage.style.display = 'block';
-
-                        setTimeout(() => {
-                            promptMessage.style.display = 'none';
-                        }, 4000);
-                    }, 10000);
-                });
-            }, 2000);
-        }
-
-        function startTracking() {
-            showTrialMessage(`Trial ${currentTrial + 1}`);
-        }
-
-        startTracking();
-
-        function showCompletionMessage() {
-            container.innerHTML = '';
-            const completionMessage = document.createElement('div');
-            completionMessage.textContent = 'Important: Please click "Dot Tracking Task Completed", then click "Close Window" button';
-            completionMessage.style.position = 'absolute';
-            completionMessage.style.top = '50%';
-            completionMessage.style.left = '50%';
-            completionMessage.style.transform = 'translate(-50%, -50%)';
-            completionMessage.style.fontSize = '24px';
-            completionMessage.style.fontWeight = 'bold';
-            completionMessage.style.color = 'green';
-            container.appendChild(completionMessage);
-        }
-    });
-    </script>
-</body>
-</html>
+          
